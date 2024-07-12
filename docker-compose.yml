@@ -1,0 +1,29 @@
+name: distributed-kv-store
+
+services:
+
+  app1:
+    build: .
+    depends_on:
+      - zookeeper
+    hostname: kvstore1
+    ports:
+      - "8081:8080"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+  app2:
+    build: .
+    depends_on:
+      - zookeeper
+    hostname: kvstore2
+    ports:
+      - "8082:8080"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
