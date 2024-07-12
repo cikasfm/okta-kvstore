@@ -1,11 +1,14 @@
 package main
 
-import "codesignal/cmd/store/services"
+import (
+	"codesignal/cmd/store/api"
+	"codesignal/cmd/store/services"
+)
 
 func main() {
-	service, err := services.NewKeyValueStore()
+	keyValueStore, err := services.NewKeyValueStore()
 	if err != nil {
 		panic(err)
 	}
-	startServer(NewHttpHandler(service))
+	startServer(api.NewKeyValueStoreApi(keyValueStore), "localhost:8080")
 }

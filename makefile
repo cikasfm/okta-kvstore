@@ -7,7 +7,7 @@ setup:
 build: setup
 	go build cmd/store/*.go
 
-run: clean setup  build
+run: clean setup build
 	./main
 
 test: setup

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"codesignal/cmd/store/api"
 	"fmt"
 	"github.com/gin-gonic/gin"
 )
@@ -32,23 +33,27 @@ func deleteKey(router *gin.Engine, handler gin.HandlerFunc) *gin.Engine {
 	return router
 }
 
-func setupRoutes(router *gin.Engine, handler *HttpHandler) *gin.Engine {
+func setupRoutes(router *gin.Engine, kvStoreRestApi api.IKeyValueStoreApi) *gin.Engine {
 	// setup routes
-	router = getKey(router, handler.getByKey)
-	router = postKey(router, handler.setValue)
-	router = deleteKey(router, handler.deleteValue)
+	router = getKey(router, kvStoreRestApi.GetByKey)
+	router = postKey(router, kvStoreRestApi.SetValue)
+	router = deleteKey(router, kvStoreRestApi.DeleteValue)
 	return router
 }
 
-func startServer(handler *HttpHandler) {
+func startServer(kvStoreRestApi api.IKeyValueStoreApi, addr ...string) {
 	gin.SetMode(gin.ReleaseMode)
 	// create router
 	router := setupRouter()
-	router = setupRoutes(router, handler)
+	router = setupRoutes(router, kvStoreRestApi)
+
+	fmt.Println("Starting server on", addr)
 
 	err := router.Run("localhost:8080")
 	if err != nil {
 		fmt.Println("Error starting server:", err)
 		return
+	} else {
+		fmt.Println("Server started")
 	}
 }
