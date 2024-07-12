@@ -1,8 +1,8 @@
 package api
 
 import (
-	"codesignal/cmd/store/services"
-	"github.com/davecgh/go-spew/spew"
+	"codesignal/internal/services"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"io"
@@ -48,7 +48,7 @@ func TestKeyValueStoreApi_deleteValue(t *testing.T) {
 			h := &KeyValueStoreApi{storage: inMemoryKeyValueStore}
 			c, e := gin.CreateTestContext(w)
 
-			req, _ := http.NewRequestWithContext(c, "DELETE", spew.Sprintf("/key/%s", tt.key), nil)
+			req, _ := http.NewRequestWithContext(c, "DELETE", fmt.Sprintf("/key/%s", tt.key), nil)
 
 			e.DELETE("/key/:key", h.DeleteValue)
 
@@ -97,7 +97,7 @@ func TestKeyValueStoreApi_getByKey(t *testing.T) {
 			h := &KeyValueStoreApi{storage: inMemoryKeyValueStore}
 			c, e := gin.CreateTestContext(w)
 
-			req, _ := http.NewRequestWithContext(c, "GET", spew.Sprintf("/key/%s", tt.key), nil)
+			req, _ := http.NewRequestWithContext(c, "GET", fmt.Sprintf("/key/%s", tt.key), nil)
 
 			e.GET("/key/:key", h.GetByKey)
 

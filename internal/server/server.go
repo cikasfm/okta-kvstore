@@ -1,7 +1,7 @@
-package main
+package server
 
 import (
-	"codesignal/cmd/store/api"
+	"codesignal/internal/api"
 	"fmt"
 	"github.com/gin-gonic/gin"
 )
@@ -41,19 +41,18 @@ func setupRoutes(router *gin.Engine, kvStoreRestApi api.IKeyValueStoreApi) *gin.
 	return router
 }
 
-func startServer(kvStoreRestApi api.IKeyValueStoreApi, addr ...string) {
-	gin.SetMode(gin.ReleaseMode)
+func StartServer(kvStoreRestApi api.IKeyValueStoreApi, addr ...string) {
+	// gin.SetMode(gin.ReleaseMode)
+
+	fmt.Println("Starting server on", addr)
+
 	// create router
 	router := setupRouter()
 	router = setupRoutes(router, kvStoreRestApi)
 
-	fmt.Println("Starting server on", addr)
-
-	err := router.Run("localhost:8080")
+	err := router.Run(addr...)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
 		return
-	} else {
-		fmt.Println("Server started")
 	}
 }

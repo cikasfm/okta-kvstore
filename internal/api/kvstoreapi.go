@@ -1,10 +1,10 @@
 package api
 
 import (
-	"codesignal/cmd/store/services"
+	"codesignal/internal/services"
 	"encoding/json"
 	"errors"
-	"github.com/davecgh/go-spew/spew"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
@@ -46,7 +46,7 @@ func (h *KeyValueStoreApi) GetByKey(c *gin.Context) {
 		} else if value != "" {
 			c.JSON(http.StatusOK, gin.H{key: value})
 		} else {
-			c.JSON(http.StatusNotFound, ErrorMessage{spew.Sprintf("key '%s' not found", key)})
+			c.JSON(http.StatusNotFound, ErrorMessage{fmt.Sprintf("key '%s' not found", key)})
 		}
 	} else {
 		c.JSON(http.StatusBadRequest, ErrorMessage{"parameter 'key' is required"})

@@ -1,8 +1,9 @@
 package main
 
 import (
-	"codesignal/cmd/store/api"
-	"codesignal/cmd/store/services"
+	"codesignal/internal/api"
+	"codesignal/internal/server"
+	"codesignal/internal/services"
 )
 
 func main() {
@@ -10,5 +11,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	startServer(api.NewKeyValueStoreApi(keyValueStore), "localhost:8080")
+	server.StartServer(api.NewKeyValueStoreApi(keyValueStore), ":8080")
 }
