@@ -3,27 +3,79 @@ name: distributed-kv-store
 services:
 
   app1:
+    hostname: app1
     build: .
-    depends_on:
-      - zookeeper
-    hostname: kvstore1
     ports:
       - "8081:8080"
+    expose:
+      - "7000"
+    networks:
+      - raft
+    volumes:
+      - raft:/usr/share
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      NODE_ID: app1
+      RAFT_BIND_ADDR: "app1:7000"
+      RAFT_PEERS: app1:7000,app2:7000,app3:7000,app4:7000
 
   app2:
+    hostname: app2
     build: .
-    depends_on:
-      - zookeeper
-    hostname: kvstore2
     ports:
       - "8082:8080"
+    expose:
+      - "7000"
+    networks:
+      - raft
+    volumes:
+      - raft:/usr/share
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      NODE_ID: app2
+      RAFT_BIND_ADDR: "app2:7000"
+      RAFT_PEERS: app1:7000,app2:7000,app3:7000,app4:7000
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+  app3:
+    hostname: app3
+    build: .
+    ports:
+      - "8083:8080"
+    expose:
+      - "7000"
+    networks:
+      - raft
+    volumes:
+      - raft:/usr/share
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+      NODE_ID: false
+      RAFT_BIND_ADDR: "app3:7000"
+      RAFT_PEERS: app1:7000,app2:7000,app3:7000,app4:7000
+
+  app4:
+    hostname: app4
+    build: .
+    ports:
+      - "8084:8080"
+    expose:
+      - "7000"
+    depends_on:
+      - app1
+      - app2
+      - app3
+    networks:
+      - raft
+    volumes:
+      - raft:/usr/share
+    environment:
+      NODE_ID: app4
+      RAFT_BIND_ADDR: "app4:7000"
+      RAFT_PEERS: app1:7000,app2:7000,app3:7000,app4:7000
+      INIT_CLUSTER: true
+      INITIAL_SERVERS: "app1:app1:7000,app2:app2:7000,app3:app3:7000,app4:app4:7000"
+
+volumes:
+  raft:
+    driver: local
+
+networks:
+  raft:
+    driver: bridge

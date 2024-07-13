@@ -3,11 +3,11 @@ package services
 import "fmt"
 
 type IKeyValueStore interface {
-	//set the value to storage by key
+	// Set the value to storage by key
 	Set(key string, value string) error
-	//get the value from storage by key
+	// Get the value from storage by key
 	Get(key string) (string, error)
-	//delete the value from storage by key
+	// Delete the value from storage by key
 	Delete(key string) error
 }
 
