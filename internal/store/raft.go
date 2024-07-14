@@ -11,10 +11,6 @@ import (
 	"path/filepath"
 )
 
-const (
-	raftDir = "./store"
-)
-
 func SetupStore() *Store {
 	logger := log.New(os.Stderr, "[raft] ", log.LstdFlags)
 	nodeID := os.Getenv("NODE_ID")
@@ -38,20 +34,33 @@ func SetupStore() *Store {
 		logger.Printf("raftAddr=%v \n", raftAddr)
 	}
 
-	path := filepath.Join(raftDir, nodeID)
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		logger.Println(fmt.Sprintf("Creating directory: %s", path))
-		err = os.MkdirAll(path, os.ModePerm)
-		if err != nil {
-			logger.Fatalf("Failed to create dir %s: %v", path, err)
-		}
+	raftDir := os.Getenv("RAFT_DIR")
+
+	inMemory := raftDir == ""
+
+	var store *Store
+
+	if inMemory {
+		store = NewStore(true)
 	} else {
-		logger.Printf("path=%v \n", path)
+		store = NewStore(false)
+
+		path := filepath.Join(raftDir, nodeID)
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			logger.Println(fmt.Sprintf("Creating directory: %s", path))
+			err = os.MkdirAll(path, os.ModePerm)
+			if err != nil {
+				logger.Fatalf("Failed to create dir %s: %v", path, err)
+			}
+		} else {
+			logger.Printf("path=%v \n", path)
+		}
+
+		store.RaftDir = path
 	}
 
 	joinAddr := os.Getenv("RAFT_JOIN_ADDR")
 
-	store := NewStore(true)
 	store.RaftBind = raftAddr.String()
 
 	err = store.Open(joinAddr == "", nodeID)

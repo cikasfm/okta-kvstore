@@ -7,6 +7,7 @@ import (
 	"codesignal/internal/store"
 	"log"
 	"os"
+	"os/signal"
 )
 
 func main() {
@@ -29,12 +30,16 @@ func main() {
 
 	// create router
 	router := server.SetupRouter()
-	router = server.SetupRoutes(router, api.NewKeyValueStoreApi(keyValueStore))
-	router.POST("/join", server.JoinHandler(kvstore))
+	router = server.SetupApiRoutes(router, api.NewKeyValueStoreApi(keyValueStore))
+	router = server.SetupRaftRoutes(router, kvstore)
 
 	err = router.Run(":" + PORT)
 	if err != nil {
 		log.Println("Error starting server:", err)
 		return
 	}
+
+	terminate := make(chan os.Signal, 1)
+	signal.Notify(terminate, os.Interrupt)
+	<-terminate
 }

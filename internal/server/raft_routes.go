@@ -10,10 +10,12 @@ import (
 	"github.com/hashicorp/raft"
 	"log"
 	"net/http"
+	"os"
 )
 
-func JoinHandler(store *store.Store) gin.HandlerFunc {
+func joinHandler(store *store.Store) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		logger := log.New(os.Stdout, "[raft-join]", log.LstdFlags)
 		var req struct {
 			NodeID  string `json:"node_id"`
 			Address string `json:"address"`
@@ -26,7 +28,7 @@ func JoinHandler(store *store.Store) gin.HandlerFunc {
 
 		err := store.Join(req.NodeID, req.Address)
 		if err != nil {
-			log.Println(fmt.Sprintf("join node error: %v", err))
+			logger.Println(fmt.Sprintf("join node error: %v", err))
 			if errors.Is(err, raft.ErrNotLeader) {
 				c.JSON(http.StatusBadRequest,
 					api.ErrorMessage{Message: "Unable to join cluster: Node is not the leader"})
@@ -42,4 +44,9 @@ func JoinHandler(store *store.Store) gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, gin.H{"message": "Added node to cluster"})
 	}
+}
+
+func SetupRaftRoutes(router *gin.Engine, kvstore *store.Store) *gin.Engine {
+	router.POST("/join", joinHandler(kvstore))
+	return router
 }

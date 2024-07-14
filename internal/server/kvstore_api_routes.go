@@ -23,7 +23,7 @@ func deleteKey(router *gin.Engine, handler gin.HandlerFunc) *gin.Engine {
 	return router
 }
 
-func SetupRoutes(router *gin.Engine, kvStoreRestApi api.IKeyValueStoreApi) *gin.Engine {
+func SetupApiRoutes(router *gin.Engine, kvStoreRestApi api.IKeyValueStoreApi) *gin.Engine {
 	// setup routes
 	router = getKey(router, kvStoreRestApi.GetByKey)
 	router = postKey(router, kvStoreRestApi.SetValue)

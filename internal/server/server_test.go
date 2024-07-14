@@ -23,7 +23,7 @@ func Test_setupRouter(t *testing.T) {
 			method:      http.MethodGet,
 			uri:         "/health",
 			wantStatus:  http.StatusOK,
-			wantContent: "\"OK\"",
+			wantContent: "{\"status\":\"ok\"}",
 		},
 	}
 	for _, tt := range tests {

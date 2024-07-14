@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func Test_SetupRoutes(t *testing.T) {
+func Test_SetupApiRoutes(t *testing.T) {
 
 	keyValueStoreApi := api.NewKeyValueStoreApi(services.NewInMemoryKeyValueStore())
 
@@ -82,7 +82,7 @@ func Test_SetupRoutes(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			ctx, engine := gin.CreateTestContext(w)
-			SetupRoutes(engine, keyValueStoreApi)
+			SetupApiRoutes(engine, keyValueStoreApi)
 
 			req, err := http.NewRequestWithContext(ctx, tt.req.method, tt.req.uri, strings.NewReader(tt.req.content))
 
