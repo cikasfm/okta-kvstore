@@ -45,6 +45,9 @@ RAFT_JOIN_ADDR=app1:8081 # <- URL of the Raft leader to join
 RAFT_DIR=/usr/share/raft # <- Raft data storage folder. If set - file system will be used for storage
 ```
 
+`PORT` (optional, default=8080)
+: port to listen to for REST API
+
 `NODE_ID` (required)
 : node name to be used in raft cluster to identify nodes
 
