@@ -13,5 +13,8 @@ run: clean setup build
 test: setup
 	GIN_MODE=test go test -v ./...
 
+bench: setup
+	go test -bench ./internal/*
+
 docker:
 	docker compose up --build
