@@ -1,6 +1,6 @@
 # Distributed Key-Value Store
 
-## Summary
+## Descision
 
 This project will try to implement and showcase development skills using GoLang
 
@@ -64,3 +64,13 @@ while still researching the [raft](https://github.com/hashicorp/raft) framework~
 I'm not familiar with Raft framework but since it was suggested and I've discovered
 that the example implementation contains the exact backing store required for this project
 I will not hesitate and pull it in directly from: https://github.com/otoolep/hraftd/blob/master/store/store.go
+
+## Summary
+
+I'm using the backing store using raft from: https://github.com/otoolep/hraftd/blob/master/store/store.go
+
+On top of that I've implemented the REST API endpoint according to spec, covered majority of the edge cases.
+
+Deployment to up to (but not limited to) 4 nodes using `docker compose`, or running manually by creating the raft cluster.
+
+Storage either in memory or on file 

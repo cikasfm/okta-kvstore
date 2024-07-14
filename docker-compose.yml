@@ -17,6 +17,7 @@ services:
       NODE_ID: app1
       GIN_MODE: release
       RAFT_BIND_ADDR: "app1:7000"
+      RAFT_DIR: /usr/share/raft
 
   app2:
     hostname: app2
@@ -36,6 +37,7 @@ services:
       GIN_MODE: release
       RAFT_BIND_ADDR: "app2:7000"
       RAFT_JOIN_ADDR: "app1:8080"
+      RAFT_DIR: /usr/share/raft
 
   app3:
     hostname: app3
@@ -55,6 +57,7 @@ services:
       GIN_MODE: release
       RAFT_BIND_ADDR: "app3:7000"
       RAFT_JOIN_ADDR: "app1:8080"
+      RAFT_DIR: /usr/share/raft
 
   app4:
     hostname: app4
@@ -76,6 +79,7 @@ services:
       GIN_MODE: release
       RAFT_BIND_ADDR: "app4:7000"
       RAFT_JOIN_ADDR: "app1:8080"
+      RAFT_DIR: /usr/share/raft
 
 volumes:
   raft:

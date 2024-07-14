@@ -102,6 +102,12 @@ func handleRaftError(err error) error {
 			Message: "Unable to execute command: Node is not a voter",
 		}
 	}
+	if "not leader" == err.Error() {
+		return ServiceError{
+			Code:    CodeRaftNotLeader,
+			Message: "Unable to execute command: Node is not the leader",
+		}
+	}
 	return ServiceError{
 		Code:    CodeRaftError,
 		Message: "Unable to execute command: Internal Server Error",
