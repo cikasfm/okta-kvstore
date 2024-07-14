@@ -12,11 +12,27 @@ To run the program you can use `make` commands:
 
 ### Testing
 
+#### Unit Tests
+
 ```shell
 make test
 ```
 
+#### Manual Tests
+
+Run the following commands once deployed
+
+```shell
+curl --location 'http://localhost:8080/key' \
+--header 'Content-Type: application/json' \
+--data '{
+    "key1": "value1"
+}'
+```
+
 ### Running
+
+Running a single instance
 
 ```shell
 make run

@@ -1,25 +1,28 @@
 package services
 
 import (
-	"encoding/json"
+	"codesignal/internal/store"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/raft"
 	"log"
-	"time"
+	"os"
 )
 
 var (
-	CodeRaftError = "raft error"
+	CodeRaftError     = "store error"
+	CodeRaftNotLeader = "store not leader"
 )
 
 type RaftKeyValueStore struct {
-	ra *raft.Raft
+	store  *store.Store
+	logger *log.Logger
 }
 
-func NewRaftKeyValueStore(ra *raft.Raft) (IKeyValueStore, error) {
+func NewRaftKeyValueStore(store *store.Store) (IKeyValueStore, error) {
 	return &RaftKeyValueStore{
-		ra: ra,
+		store:  store,
+		logger: log.New(os.Stderr, "[store-api] ", log.LstdFlags),
 	}, nil
 }
 
@@ -32,20 +35,27 @@ func (s *RaftKeyValueStore) Set(key string, value string) error {
 	if err != nil {
 		return err
 	}
-	data, err := json.Marshal(map[string]string{key: value})
+
+	existing, err := s.Get(key)
 	if err != nil {
-		return err
+		s.logger.Println(fmt.Sprintf("error setting key to Raft store '%s': %s", key, err.Error()))
+		return handleRaftError(err)
 	}
-
-	applyFuture := s.ra.Apply(data, 10*time.Second)
-
-	if err := applyFuture.Error(); err != nil {
-		log.Println(fmt.Errorf("set error: %v", err))
+	if existing != "" {
 		return ServiceError{
-			Code:    CodeRaftError,
-			Message: "Failed to apply command",
+			Code:    CodeKeyExists,
+			Message: fmt.Sprintf("key %s already exists", key),
 		}
 	}
+
+	// set key to Raft store
+	err = s.store.Set(key, value)
+
+	if err != nil {
+		s.logger.Println(fmt.Sprintf("error setting key to Raft store '%s': %s", key, err.Error()))
+		return handleRaftError(err)
+	}
+
 	return nil
 }
 
@@ -55,19 +65,12 @@ func (s *RaftKeyValueStore) Get(key string) (string, error) {
 		return "", err
 	}
 
-	// Raft does not support direct read-only queries
-	f := s.ra.Apply([]byte(`{"operation":"get", "key":"`+key+`"}`), 10*time.Second)
-	if err := f.Error(); err != nil {
-		log.Println(fmt.Errorf("get error: %v", err))
-		return "", errors.New("failed to apply command")
+	value, err := s.store.Get(key)
+	if err != nil {
+		s.logger.Println(fmt.Sprintf("error getting key from Raft store %s: %s", key, err.Error()))
+		return "", handleRaftError(err)
 	}
 
-	result := f.Response()
-	value, ok := result.(string)
-	if !ok {
-		log.Println(fmt.Errorf("get error: %v", err))
-		return "", errors.New("invalid raft response")
-	}
 	return value, nil
 }
 
@@ -76,5 +79,31 @@ func (s *RaftKeyValueStore) Delete(key string) error {
 	if err != nil {
 		return err
 	}
-	return errors.New("not implemented")
+
+	err = s.store.Delete(key)
+	if err != nil {
+		s.logger.Println(fmt.Sprintf("error deleting key from Raft store %s: %s", key, err.Error()))
+		return handleRaftError(err)
+	}
+
+	return nil
+}
+
+func handleRaftError(err error) error {
+	if errors.Is(err, raft.ErrNotLeader) {
+		return ServiceError{
+			Code:    CodeRaftNotLeader,
+			Message: "Unable to execute command: Node is not the leader",
+		}
+	}
+	if errors.Is(err, raft.ErrNotVoter) {
+		return ServiceError{
+			Code:    CodeRaftNotLeader,
+			Message: "Unable to execute command: Node is not a voter",
+		}
+	}
+	return ServiceError{
+		Code:    CodeRaftError,
+		Message: "Unable to execute command: Internal Server Error",
+	}
 }

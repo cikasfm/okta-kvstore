@@ -10,13 +10,13 @@ services:
     expose:
       - "7000"
     networks:
-      - raft
+      - store
     volumes:
       - raft:/usr/share
     environment:
       NODE_ID: app1
+      GIN_MODE: release
       RAFT_BIND_ADDR: "app1:7000"
-      RAFT_PEERS: app1:7000,app2:7000,app3:7000,app4:7000
 
   app2:
     hostname: app2
@@ -25,14 +25,17 @@ services:
       - "8082:8080"
     expose:
       - "7000"
+    depends_on:
+      - app1
     networks:
-      - raft
+      - store
     volumes:
       - raft:/usr/share
     environment:
       NODE_ID: app2
+      GIN_MODE: release
       RAFT_BIND_ADDR: "app2:7000"
-      RAFT_PEERS: app1:7000,app2:7000,app3:7000,app4:7000
+      RAFT_JOIN_ADDR: "app1:8080"
 
   app3:
     hostname: app3
@@ -41,14 +44,17 @@ services:
       - "8083:8080"
     expose:
       - "7000"
+    depends_on:
+      - app1
     networks:
-      - raft
+      - store
     volumes:
       - raft:/usr/share
     environment:
-      NODE_ID: false
+      NODE_ID: app3
+      GIN_MODE: release
       RAFT_BIND_ADDR: "app3:7000"
-      RAFT_PEERS: app1:7000,app2:7000,app3:7000,app4:7000
+      RAFT_JOIN_ADDR: "app1:8080"
 
   app4:
     hostname: app4
@@ -62,20 +68,19 @@ services:
       - app2
       - app3
     networks:
-      - raft
+      - store
     volumes:
       - raft:/usr/share
     environment:
       NODE_ID: app4
+      GIN_MODE: release
       RAFT_BIND_ADDR: "app4:7000"
-      RAFT_PEERS: app1:7000,app2:7000,app3:7000,app4:7000
-      INIT_CLUSTER: true
-      INITIAL_SERVERS: "app1:app1:7000,app2:app2:7000,app3:app3:7000,app4:app4:7000"
+      RAFT_JOIN_ADDR: "app1:8080"
 
 volumes:
   raft:
     driver: local
 
 networks:
-  raft:
+  store:
     driver: bridge

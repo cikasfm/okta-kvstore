@@ -2,7 +2,9 @@ package server
 
 import (
 	"codesignal/internal/api"
+	"codesignal/internal/store"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/raft"
@@ -10,7 +12,7 @@ import (
 	"net/http"
 )
 
-func JoinHandler(ra *raft.Raft) gin.HandlerFunc {
+func JoinHandler(store *store.Store) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {
 			NodeID  string `json:"node_id"`
@@ -22,23 +24,19 @@ func JoinHandler(ra *raft.Raft) gin.HandlerFunc {
 			return
 		}
 
-		configFuture := ra.GetConfiguration()
-		if err := configFuture.Error(); err != nil {
-			c.JSON(http.StatusInternalServerError, api.ErrorMessage{Message: "Failed to get raft configuration"})
-			return
-		}
-
-		for _, srv := range configFuture.Configuration().Servers {
-			if srv.ID == raft.ServerID(req.NodeID) || srv.Address == raft.ServerAddress(req.Address) {
-				c.JSON(http.StatusBadRequest, api.ErrorMessage{Message: "Node already exists"})
-				return
+		err := store.Join(req.NodeID, req.Address)
+		if err != nil {
+			log.Println(fmt.Sprintf("join node error: %v", err))
+			if errors.Is(err, raft.ErrNotLeader) {
+				c.JSON(http.StatusBadRequest,
+					api.ErrorMessage{Message: "Unable to join cluster: Node is not the leader"})
+			} else if errors.Is(err, raft.ErrNotVoter) {
+				c.JSON(http.StatusBadRequest,
+					api.ErrorMessage{Message: "Unable to join cluster: Node is not a voter"})
+			} else {
+				c.JSON(http.StatusInternalServerError,
+					api.ErrorMessage{Message: "Unable to join cluster: Internal Server Error"})
 			}
-		}
-
-		future := ra.AddVoter(raft.ServerID(req.NodeID), raft.ServerAddress(req.Address), 0, 0)
-		if err := future.Error(); err != nil {
-			log.Println(fmt.Errorf("AddVoter error: %v", err))
-			c.JSON(http.StatusInternalServerError, api.ErrorMessage{Message: "Failed to add node to cluster"})
 			return
 		}
 

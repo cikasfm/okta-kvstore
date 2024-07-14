@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
+	"log"
 	"net/http"
+	"os"
 )
 
 type ErrorMessage struct {
@@ -23,11 +25,13 @@ type IKeyValueStoreApi interface {
 
 type KeyValueStoreApi struct {
 	storage services.IKeyValueStore
+	logger  *log.Logger
 }
 
 func NewKeyValueStoreApi(service services.IKeyValueStore) IKeyValueStoreApi {
 	return &KeyValueStoreApi{
 		storage: service,
+		logger:  log.New(os.Stdout, "[kvstoreapi] ", log.LstdFlags),
 	}
 }
 
@@ -128,6 +132,8 @@ func handleError(err error) (int, string) {
 			return http.StatusNotFound, serviceError.Message
 		case services.CodeKeyExists:
 			return http.StatusConflict, serviceError.Message
+		case services.CodeRaftNotLeader:
+			return http.StatusMisdirectedRequest, serviceError.Message
 		default:
 			return http.StatusInternalServerError, serviceError.Message
 		}

@@ -2,9 +2,9 @@ package main
 
 import (
 	"codesignal/internal/api"
-	"codesignal/internal/raft"
 	"codesignal/internal/server"
 	"codesignal/internal/services"
+	"codesignal/internal/store"
 	"log"
 	"os"
 )
@@ -12,8 +12,8 @@ import (
 func main() {
 
 	log.Println("Starting Raft...")
-	ra := raft.SetupRaft()
-	keyValueStore, err := services.NewRaftKeyValueStore(ra)
+	kvstore := store.SetupStore()
+	keyValueStore, err := services.NewRaftKeyValueStore(kvstore)
 	if err != nil {
 		panic(err)
 	}
@@ -30,7 +30,7 @@ func main() {
 	// create router
 	router := server.SetupRouter()
 	router = server.SetupRoutes(router, api.NewKeyValueStoreApi(keyValueStore))
-	router.POST("/join", server.JoinHandler(ra))
+	router.POST("/join", server.JoinHandler(kvstore))
 
 	err = router.Run(":" + PORT)
 	if err != nil {

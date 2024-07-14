@@ -57,15 +57,10 @@ There are multiple things to take into consideration:
     * replicate on read ( check neighbours for value, take the lastest one and update local version )
   * batch
     * collect batch updates and send to all neighbours based on a schedule and/or max batch size
-* Locking
-  * It's important to understand whether locking is needed for writing during a race condition:
-    * When more than one node is trying to call `Set` or `Delete` at the same time 
-      which would result in modification of a value
-    * One option to solve this is by creating a `lock` on a row by key on all/consensus nodes prior to update,
-      then update all nodes and `unlock`. Any other node trying to modify a value ( Set or Delete )
-      would be blocked by the lock and should either wait for `unlock` or fail
-  * In case of full replication - then full node data would have to be locked and all modify operations would be blocked
-    * That can create a high consistency level but with a large penalty of performance
 
-I'm leaning towards using [Zookeeper](https://zookeeper.apache.org/) for service discovery
-while still researching the [raft](https://github.com/hashicorp/raft) framework 
+~~I'm leaning towards using [Zookeeper](https://zookeeper.apache.org/) for service discovery
+while still researching the [raft](https://github.com/hashicorp/raft) framework~~
+
+I'm not familiar with Raft framework but since it was suggested and I've discovered
+that the example implementation contains the exact backing store required for this project
+I will not hesitate and pull it in directly from: https://github.com/otoolep/hraftd/blob/master/store/store.go
