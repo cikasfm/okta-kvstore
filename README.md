@@ -2,7 +2,7 @@
 
 ## Summary
 
-This project will try to implement and showcase development skills using GoLang
+This project will try to implement a Distributed Key-Value Store and so showcase development skills using GoLang
 
 Author: [Zilvinas Vilutis](https://www.linkedin.com/in/zvilutis/)
 
