@@ -45,6 +45,18 @@ RAFT_JOIN_ADDR=app1:8081 # <- URL of the Raft leader to join
 RAFT_DIR=/usr/share/raft # <- Raft data storage folder. If set - file system will be used for storage
 ```
 
+`NODE_ID` (required)
+: node name to be used in raft cluster to identify nodes
+
+`RAFT_BIND_ADDR` (optional, default=127.0.0.1:7000)
+: raft server bind address/port for cluster operations
+
+`RAFT_JOIN_ADDR` (optional, default=)
+: URL of the Raft leader to join. When not set - the node will auto-elect as Leader. Otherwise - will try to join the cluster at the given address.
+
+`RAFT_DIR` (optional, default=)
+: Data storage folder. When not set - in memory storage used. Otherwise, `rockdb` files will be stored in this directory. 
+
 #### Cluster
 
 **Using Docker Compose**
